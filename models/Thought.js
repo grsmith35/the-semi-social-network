@@ -57,6 +57,6 @@ const ThoughtSchema = new Schema(
     }
 )
 
-const Thought = model('Thought', ThoughtPizza);
+const Thought = model('Thought', ThoughtSchema);
 
 module.exports = Thought;
