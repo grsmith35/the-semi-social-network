@@ -1,16 +1,18 @@
-const { Thought } = require('../models');
+const { Thought, User } = require('../models');
 
 const thoughtController = {
     //get all thoughts
     getAllThoughts(req, res) {
         Thought.find({})
+        .select("-__v")
+        .sort({ _id: -1 })
         .then(thoughtData => res.json(thoughtData))
         .catch(err => res.status(400).json(err))
     },
 
     //get thought by id
     getThoughtById({ params }, res) {
-        Thought.findOne({ _id: params.id})
+        Thought.findOne({ _id: params.thoughtId})
         .then(thoughtData => {
             if(!thoughtData) {
                 res.status(404).json({message: 'No thought found with this ID'})
@@ -24,7 +26,14 @@ const thoughtController = {
     //create a thought for a user id
     createThought({ params, body }, res) {
         Thought.create(body)
-        .then(thougtData => res.json(thoughtData))
+        .then(({_id}) => {
+            return User.findOneAndUpdate(
+                { _id: params.userId },
+                { $push: { thoughts: _id }},
+                { new: true, runValidators: true }
+            )
+        })
+        .then(thoughtData => res.json(thoughtData))
         .catch(err => res.status(400).json(err));
     },
 
@@ -47,9 +56,10 @@ const thoughtController = {
 
     //update a thought
     updateThought({ params, body }, res) {
+        console.log('got to the update')
         Thought.findOneAndUpdate(
-            { _id: params. thoughtId},
-            { $push: body },
+            { _id: params.thoughtId},
+            body,
             { new: true, runValidators: true }
         )
         .then(thoughtData => {
@@ -57,6 +67,7 @@ const thoughtController = {
                 res.status(404).json({ message: 'No thought found with this ID'});
                 return;
             }
+            console.log(thoughtData);
             res.json(thoughtData);
         })
         .catch(err => res.status(400).json(err));
@@ -85,11 +96,15 @@ const thoughtController = {
         .then(reactionData => {
             if(!reactionData) {
                 res.status(404).json({ message: 'No reaction with this ID found!'});
-                return;
             }
+            console.log('there was data ')
             res.json(reactionData);
         })
-        .catch(err => res.status(400).json(err));
+        .catch(err => {
+            console.log(err)
+            res.status(400).json(err)
+        });
+        
     }
 };
 

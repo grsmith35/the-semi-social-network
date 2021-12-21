@@ -1,11 +1,11 @@
 const { User } = require('../models');
 
 const friendController = {
-    addFriend({ paramas }, res) {
+    addFriend({ params }, res) {
         User.findOneAndUpdate(
             { _id: params.userId },
-            { $push: { friends: body }},
-            { new: true }
+            { $push: { friends: params.friendId }},
+            { new: true, runValidators: true }
         )
         .then(friendData => {
             if(!friendData) {
@@ -20,14 +20,14 @@ const friendController = {
     removeFriend({ params }, res) {
         User.findOneAndUpdate(
             { _id: params.userId },
-            { $pull: {friends: { friendId: params.friendId }}},
+            { $pull: {friends: params.friendId }},
             { new: true }
         )
         .then(friendData => {
             if(!friendData) {
                 res.status(404).json({ message: 'No user found with this id!'});
-                return;
             }
+            res.json(friendData);
         })
         .catch(err => res.status(400).json(err));
     }
